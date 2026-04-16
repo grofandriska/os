@@ -1,6 +1,7 @@
-package hu.grofandriska.os.entity.app;
+package hu.grofandriska.os.entity.app.implementations;
 
 
+import hu.grofandriska.os.entity.app.Application;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 import lombok.NoArgsConstructor;

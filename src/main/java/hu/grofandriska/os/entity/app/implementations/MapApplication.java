@@ -1,18 +1,18 @@
-package hu.grofandriska.os.entity.app;
+package hu.grofandriska.os.entity.app.implementations;
 
 
+import hu.grofandriska.os.entity.app.Application;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 import lombok.NoArgsConstructor;
 
 @Entity
-@DiscriminatorValue("GAME")
+@DiscriminatorValue("MAP")
 @NoArgsConstructor
-public class GameApplication extends Application {
-
+public class MapApplication extends Application {
     @Override
     public void onLaunch() {
         System.out.println("--- [ " + getName().toUpperCase() + " ] ---");
-        System.out.println("A játék betöltődik... Sok sikert!");
+        System.out.println("GPS koordináták lekérése... Pozíció meghatározva.");
     }
 }
