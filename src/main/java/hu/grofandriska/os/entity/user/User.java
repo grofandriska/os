@@ -16,6 +16,7 @@ import java.util.List;
 @Data
 @RequiredArgsConstructor
 @NoArgsConstructor
+@Inheritance(strategy = InheritanceType.JOINED)
 public abstract class User {
 
     @Id
