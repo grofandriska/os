@@ -1,30 +1,22 @@
 package hu.grofandriska.os.service;
 
-import hu.grofandriska.os.entity.menu.Menu;
-import hu.grofandriska.os.entity.theme.Theme;
-import hu.grofandriska.os.entity.theme.Wallpaper;
-import hu.grofandriska.os.entity.user.Role;
+
 import hu.grofandriska.os.entity.user.User;
 import hu.grofandriska.os.entity.user.UserGroup;
-import hu.grofandriska.os.entity.user.company.CompanyMember;
-import hu.grofandriska.os.entity.user.family.Family;
-import hu.grofandriska.os.entity.user.family.FamilyMember;
 import hu.grofandriska.os.repository.UserGroupRepository;
 import hu.grofandriska.os.repository.UserRepository;
-import jakarta.transaction.Transactional;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
-
 import java.time.LocalDate;
-import java.util.UUID;
+import java.util.List;
+import java.util.Optional;
+
 
 @Service
 public class UserService {
 
-    private UserRepository repository;
+    private final UserRepository repository;
 
-    private UserGroupRepository userGroupRepository;
+    private final UserGroupRepository userGroupRepository;
 
     public UserService(UserRepository repository, UserGroupRepository userGroupRepository) {
         this.repository = repository;
@@ -35,75 +27,35 @@ public class UserService {
         return repository.save(user);
     }
 
-    @Transactional
-    public User createMemberForCurrentGroup(User currentUser,
-                                            String lastName,
-                                            String firstName,
-                                            Role role) {
-        User newUser;
-        // A polimorfizmus ereje: a currentUser osztálya dönt!
-        if (currentUser instanceof FamilyMember) {
-            newUser = new FamilyMember();
-        } else if (currentUser instanceof CompanyMember) {
-            newUser = new CompanyMember();
-        } else {
-            throw new IllegalStateException("Ez a felhasználó nem vehet fel új tagot!");
-        }
-
-        // Alapadatok beállítása
-        newUser.setId(UUID.randomUUID().toString());
-        newUser.setFirstName(firstName);
-        newUser.setLastName(lastName);
-        newUser.setFullName(lastName + " " + firstName);
-        newUser.setGroup(currentUser.getGroup()); // Automatikus Group öröklődés
-        newUser.setRole(role); // Az új tag alapból csak sima user
-
-        return repository.save(newUser);
+    public User findUserByName(String fullName) {
+        return repository.findByFullName(fullName).orElse(null);
     }
 
-    public User findUserByName(String fullName) {
-        return repository.findByFullName(fullName).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+    public List<User> findUsersByGroupId(String groupId) {
+
+        UserGroup userGroup = userGroupRepository.findById(groupId).orElse(null);
+        if (userGroup != null) {
+            return repository.findByGroup(userGroup);
+        }
+        return null;
     }
 
     public void deleteUser(String fullName) {
-        User user = repository.findByFullName(fullName).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
-        repository.deleteById(user.getId());
-    }
+        repository.findByFullName(fullName).ifPresent(user -> repository.deleteById(user.getId()));
 
-    public User initializeAdmin(String firstName, String lastName) {
-        // Itt a konkrét osztályt példányosítjuk, ami örököl a Userből
-        FamilyMember admin = new FamilyMember();
-        admin.setId(UUID.randomUUID().toString());
-        admin.setFirstName(firstName);
-        admin.setLastName(lastName);
-        admin.setRole(Role.ADMIN);
-        admin.setFullName(lastName + " " + firstName);
-
-        UserGroup userGroup = new Family();
-        userGroup.setId("1");
-        userGroup.setName("Gróf Család");
-        userGroupRepository.save(userGroup);
-        admin.setGroup(userGroup);
-
-
-        // Itt hozzuk létre hozzá a kezdő menüt is
-
-
-        return repository.save(admin);
     }
 
     public User modifyUser(String fullName, User user) {
-        User oldUser = repository.findByFullName(fullName).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
-
-        oldUser.setRole(user.getRole());
-        oldUser.setUpdatedAt(LocalDate.now());
-        oldUser.setFirstName(user.getFirstName());
-        oldUser.setLastName(user.getLastName());
-        oldUser.setFullName(oldUser.getFirstName() + " " + oldUser.getLastName());
-
-        return repository.save(oldUser);
+        User oldUser = repository.findByFullName(fullName).orElse(null);
+        if (oldUser != null){
+            oldUser.setRole(user.getRole());
+            oldUser.setUpdatedAt(LocalDate.now());
+            oldUser.setFirstName(user.getFirstName());
+            oldUser.setLastName(user.getLastName());
+            oldUser.setFullName(oldUser.getFirstName() + " " + oldUser.getLastName());
+            return repository.save(oldUser);
+        }
+        return null;
     }
 
 }

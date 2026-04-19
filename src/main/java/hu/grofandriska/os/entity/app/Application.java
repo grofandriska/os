@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
+import lombok.ToString;
 
 
 @Data
@@ -19,6 +20,7 @@ public abstract class Application {
     private String name;
 
     @ManyToOne(targetEntity = User.class)
+    @ToString.Exclude
     private User owner;
 
     public abstract void onLaunch();

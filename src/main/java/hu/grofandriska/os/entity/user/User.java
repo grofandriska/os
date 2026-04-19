@@ -7,6 +7,7 @@ import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
+import lombok.ToString;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -27,12 +28,14 @@ public abstract class User {
 
     @ManyToOne
     @JoinColumn(name = "group_id")
+    @ToString.Exclude
     private UserGroup group;
 
     @Enumerated(EnumType.STRING)
     private Role role;
 
     @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, orphanRemoval = true)
+    @ToString.Exclude
     private List<Application> installedApplications = new ArrayList<>();
 
     private LocalDate createdAt = LocalDate.now();

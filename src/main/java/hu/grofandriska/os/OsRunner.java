@@ -2,11 +2,17 @@ package hu.grofandriska.os;
 
 import hu.grofandriska.os.entity.user.Role;
 import hu.grofandriska.os.entity.user.User;
+import hu.grofandriska.os.entity.user.UserGroup;
+import hu.grofandriska.os.entity.user.company.CompanyMember;
+import hu.grofandriska.os.entity.user.family.FamilyMember;
 import hu.grofandriska.os.service.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Optional;
 import java.util.Scanner;
 
 @Component
@@ -18,13 +24,16 @@ public class OsRunner implements CommandLineRunner {
     private final ThemeService themeService;
     private final WallpaperService wallpaperService;
     private final ApplicationService appService;
+    private final UtilService utilService;
 
     private User currentUser;
 
     @Override
     public void run(String... args) {
         System.out.println("--- OS Rendszer Kezelő Felület ---");
-        userService.initializeAdmin("András", "Gróf");
+        UserGroup userGroup = utilService.createGroup();
+        utilService.initializeAdmin("András", "Gróf", userGroup);
+        utilService.initializeAdmin("Béla", "Gróf", userGroup);
         while (currentUser == null) {
             loginProcess();
         }
@@ -35,7 +44,6 @@ public class OsRunner implements CommandLineRunner {
         System.out.print("\nKérem adja meg a felhasználónevét: ");
         String name = sc.nextLine();
 
-        // Itt hívjuk a szervizt, ami visszaadja a User-t vagy null-t
         User user = userService.findUserByName(name);
 
         if (user != null) {
@@ -75,9 +83,10 @@ public class OsRunner implements CommandLineRunner {
     // --- 1. USER MANAGEMENT ALMENÜ ---
     private void userSubMenu() {
         System.out.println("\n--- USER MANAGEMENT ---");
-        System.out.println("1. Add User");
-        System.out.println("2. Edit User");
-        System.out.println("3. Remove User");
+        System.out.println("1. Add member to your group");
+        System.out.println("2. List Members");
+        System.out.println("3. Edit User");
+        System.out.println("4. Delete User");
         System.out.println("b. Vissza");
 
         String choice = sc.nextLine();
@@ -99,21 +108,86 @@ public class OsRunner implements CommandLineRunner {
                     }
                 }
 
-                userService.createMemberForCurrentGroup(currentUser, lastName, firstName, role); // Hívás a saját szervizedbe
+                utilService.createMemberForCurrentGroup(currentUser, lastName, firstName, role);
+                userSubMenu();
             }
             case "2" -> {
-                //TODO -> listázz groupd Id alapján vagy saját magát modify
-                System.out.print("TBD");
-                //userService.modifyUser(); // Stb...
+                System.out.print("Csoportod tagjai:\n");
+                List<User> members = userService.findUsersByGroupId(currentUser.getGroup().getId());
+                for (int i = 0; i < members.size(); i++) {
+                    System.out.println(i + 1 + ". " + members.get(i).toString());
+                }
+                userSubMenu();
             }
             case "3" -> {
-                System.out.print("TBD");
-                //TODO -> listázz groupd Id alapján vagy saját magát modify és exit
-                //userService.deleteUser();
+                String response = " ";
+                String firstName = " ";
+                String lastName = " ";
+                System.out.print("Profil szerkesztése\n");
+
+                while (!response.equals("I") && !response.equals("N")) {
+                    System.out.print("Családnév módosul? (I/N)");
+                    response = sc.nextLine();
+                    if (response.equals("I")) {
+                        System.out.print("Család név: ");
+                        firstName = sc.nextLine();
+                    } else if (response.equals("N")) {
+                        firstName = currentUser.getFirstName();
+
+                    }
+                }
+                response = " ";
+                while (!response.equals("I") && !response.equals("N")) {
+                    System.out.print("Keresztnév  módosul? (I/N)");
+                    response = sc.nextLine();
+                    if (response.equals("I")) {
+                        System.out.print("Keresztnév: ");
+                        lastName = sc.nextLine();
+                    } else if (response.equals("N")) {
+                        lastName = currentUser.getLastName();
+
+                    }
+                }
+
+                User user;
+                if (currentUser instanceof FamilyMember) {
+                    user = new FamilyMember();
+                } else {
+                    user = new CompanyMember();
+                }
+
+                user.setId(currentUser.getId());
+                user.setRole(currentUser.getRole());
+                user.setFirstName(firstName);
+                user.setLastName(lastName);
+                user.setFullName(lastName + " " + firstName);
+                user.setInstalledApplications(currentUser.getInstalledApplications());
+                user.setActiveWallpaper(currentUser.getActiveWallpaper());
+                user.setTheme(currentUser.getTheme());
+                user.setUpdatedAt(LocalDate.now());
+
+                userService.modifyUser(currentUser.getFullName(), user);
+
+                userSubMenu();
+
+            }
+            case "4" -> {
+                String response = " ";
+                while (!response.equals("I") && !response.equals("N")) {
+                    System.out.println("Biztos törlöd a felhasználódat? (I/N)");
+                    response = sc.nextLine();
+                    if (response.equals("I")) {
+                        userService.deleteUser(currentUser.getFullName());
+                        loginProcess();
+                    } else if (response.equals("N")) {
+                        userSubMenu();
+                    }
+                }
+
             }
             case "b" -> {
-                System.out.print("TBD");
-            } // Üresen hagyva visszaugrik a főmenübe
+                mainMenu();
+            }
         }
     }
 
