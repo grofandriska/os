@@ -16,6 +16,7 @@ import lombok.ToString;
 public abstract class Application {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
     private String name;
 

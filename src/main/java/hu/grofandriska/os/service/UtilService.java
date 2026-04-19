@@ -7,6 +7,7 @@ import hu.grofandriska.os.entity.user.UserGroup;
 import hu.grofandriska.os.entity.user.company.CompanyMember;
 import hu.grofandriska.os.entity.user.family.Family;
 import hu.grofandriska.os.entity.user.family.FamilyMember;
+import hu.grofandriska.os.repository.ApplicationRepository;
 import hu.grofandriska.os.repository.UserGroupRepository;
 import hu.grofandriska.os.repository.UserRepository;
 import jakarta.transaction.Transactional;
@@ -22,10 +23,13 @@ public class UtilService {
 
     private UserGroupRepository userGroupRepository;
 
+    private ApplicationRepository applicationRepository;
 
-    public UtilService(UserRepository repository, UserGroupRepository userGroupRepository) {
+
+    public UtilService(UserRepository repository, UserGroupRepository userGroupRepository, ApplicationRepository applicationRepository) {
         this.repository = repository;
         this.userGroupRepository = userGroupRepository;
+        this.applicationRepository = applicationRepository;
     }
 
     @Transactional
@@ -39,6 +43,7 @@ public class UtilService {
         admin.setGroup(userGroup);
         return repository.save(admin);
     }
+
 
     public UserGroup createGroup(){
         UserGroup userGroup = new Family();

@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 @DiscriminatorValue("GAME")
 public class GameApplication extends Application {
 
+
     @Override
     public void onLaunch() {
         System.out.println("--- [ " + getName().toUpperCase() + " ] ---");
