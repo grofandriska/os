@@ -9,6 +9,7 @@ import hu.grofandriska.os.entity.user.UserGroup;
 import hu.grofandriska.os.entity.user.company.CompanyMember;
 import hu.grofandriska.os.entity.user.family.Family;
 import hu.grofandriska.os.entity.user.family.FamilyMember;
+import hu.grofandriska.os.repository.UserGroupRepository;
 import hu.grofandriska.os.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.http.HttpStatus;
@@ -23,8 +24,11 @@ public class UserService {
 
     private UserRepository repository;
 
-    public UserService(UserRepository repository) {
+    private UserGroupRepository userGroupRepository;
+
+    public UserService(UserRepository repository, UserGroupRepository userGroupRepository) {
         this.repository = repository;
+        this.userGroupRepository = userGroupRepository;
     }
 
     public User saveUser(User user) {
@@ -79,6 +83,7 @@ public class UserService {
         UserGroup userGroup = new Family();
         userGroup.setId("1");
         userGroup.setName("Gróf Család");
+        userGroupRepository.save(userGroup);
         admin.setGroup(userGroup);
 
 
