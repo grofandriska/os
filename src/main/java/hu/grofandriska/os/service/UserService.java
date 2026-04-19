@@ -1,5 +1,6 @@
 package hu.grofandriska.os.service;
 
+import hu.grofandriska.os.entity.theme.Theme;
 import hu.grofandriska.os.entity.user.User;
 import hu.grofandriska.os.entity.user.company.CompanyMember;
 import hu.grofandriska.os.entity.user.family.FamilyMember;
@@ -37,4 +38,5 @@ public class UserService {
 
         return repository.save(oldUser);
     }
+
 }
