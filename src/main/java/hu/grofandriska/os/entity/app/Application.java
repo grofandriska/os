@@ -10,7 +10,6 @@ import lombok.RequiredArgsConstructor;
 @Data
 @Entity
 @RequiredArgsConstructor
-@NoArgsConstructor
 @DiscriminatorColumn(name = "app_type")
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 public abstract class Application {

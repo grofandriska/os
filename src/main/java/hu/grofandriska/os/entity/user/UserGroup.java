@@ -12,7 +12,6 @@ import java.util.List;
 @Entity
 @Data
 @RequiredArgsConstructor
-@NoArgsConstructor
 @Inheritance(strategy = InheritanceType.JOINED)
 public abstract class UserGroup {
 

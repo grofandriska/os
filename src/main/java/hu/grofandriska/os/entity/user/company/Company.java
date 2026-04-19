@@ -6,8 +6,6 @@ import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 
 
-@RequiredArgsConstructor
-@NoArgsConstructor
 @Entity
 public class Company extends UserGroup {
 }

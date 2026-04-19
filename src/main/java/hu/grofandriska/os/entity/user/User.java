@@ -15,8 +15,8 @@ import java.util.List;
 @Entity
 @Data
 @RequiredArgsConstructor
-@NoArgsConstructor
 @Inheritance(strategy = InheritanceType.JOINED)
+@Table(name = "app_users")
 public abstract class User {
 
     @Id
@@ -35,7 +35,7 @@ public abstract class User {
     @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Application> installedApplications = new ArrayList<>();
 
-    private LocalDate createdAt;
+    private LocalDate createdAt = LocalDate.now();
     private LocalDate updatedAt;
 
     @ManyToOne

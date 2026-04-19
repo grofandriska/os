@@ -8,7 +8,6 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @DiscriminatorValue("TODO")
-@NoArgsConstructor
 public class ToDoApplication extends Application {
     @Override
     public void onLaunch() {
