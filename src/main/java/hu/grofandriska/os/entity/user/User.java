@@ -8,7 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 
-import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,6 +23,7 @@ public abstract class User {
     private String id;
     private String firstName;
     private String lastName;
+    private String fullName;
 
     @ManyToOne
     @JoinColumn(name = "group_id")
@@ -34,8 +35,8 @@ public abstract class User {
     @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Application> installedApplications = new ArrayList<>();
 
-    private Timestamp createdAt;
-    private Timestamp updatedAt;
+    private LocalDate createdAt;
+    private LocalDate updatedAt;
 
     @ManyToOne
     @JoinColumn(name = "wallpaper_id")
