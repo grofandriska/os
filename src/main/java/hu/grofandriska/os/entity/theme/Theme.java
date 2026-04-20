@@ -17,7 +17,7 @@ public class Theme {
     private String name;
     private String description;
 
-    @ManyToOne
+    @ManyToMany
     private User owner;
 
 }

@@ -3,6 +3,7 @@ package hu.grofandriska.os;
 import hu.grofandriska.os.entity.app.Application;
 import hu.grofandriska.os.entity.app.implementations.GameApplication;
 import hu.grofandriska.os.entity.app.implementations.MapApplication;
+import hu.grofandriska.os.entity.theme.Theme;
 import hu.grofandriska.os.entity.user.Role;
 import hu.grofandriska.os.entity.user.User;
 import hu.grofandriska.os.entity.user.UserGroup;
@@ -43,7 +44,7 @@ public class OsRunner implements CommandLineRunner {
         GameApplication gameApplication = new GameApplication();
         gameApplication.setName("Minecraft");
         GameApplication gameApplication2 = new GameApplication();
-        gameApplication.setName("World Of Tanks");
+        gameApplication2.setName("World Of Tanks");
         MapApplication mapApplication = new MapApplication();
         MapApplication mapApplication2 = new MapApplication();
         mapApplication.setName("Terra GPS");
@@ -89,7 +90,7 @@ public class OsRunner implements CommandLineRunner {
             String choice = sc.nextLine();
             switch (choice) {
                 case "1" -> userSubMenu();
-                case "2" -> System.out.println("TBD");
+                case "2" -> themeSubMenu();
                 case "3" -> System.out.println("TBD");
                 case "4" -> appSubMenu();
                 case "q" -> System.exit(0);
@@ -98,8 +99,68 @@ public class OsRunner implements CommandLineRunner {
         }
     }
 
+    public void themeSubMenu() {
+        System.out.println("\n--- USER MANAGEMENT ---");
+        System.out.println("1. Add theme");
+        System.out.println("2. Edit theme");
+        System.out.println("3. Delete theme");
+        System.out.println("4. List themes");
+        System.out.println("5. Set my theme");
+        System.out.println("b. Vissza");
+
+        String choice = sc.nextLine();
+        switch (choice) {
+            case "1" -> {
+                Theme theme = new Theme();
+                String name = "";
+                while (name.isBlank()) {
+                    System.out.println("Mi a téma neve?");
+                    name = sc.nextLine();
+                }
+                theme.setName(name);
+                name = "";
+                while (name.isBlank()) {
+                    System.out.println("Mi a téma leírása?");
+                    name = sc.nextLine();
+                }
+                theme.setDescription(name);
+                theme.setOwner(currentUser);
+                theme.setId(UUID.randomUUID().toString());
+                themeService.saveTheme(theme);
+                themeSubMenu();
+            }
+            case "2" -> {
+                List<Theme> themeList = themeService.listThemes();
+                if (themeList.isEmpty()) {
+                    System.out.println("Nincsenek felvett témák");
+                    themeSubMenu();
+                }
+                for (Theme th : themeList) {
+                    System.out.println(themeList.indexOf(th) + ". " + th.getName());
+                }
+                String response = "";
+                while (response.isBlank() || Integer.parseInt(response) < 1) {
+                    System.out.println("Melyik appot akarod módosítani?");
+                    response = sc.nextLine();
+                }
+
+            }
+            case "3" -> {
+                modifyMember();
+                userSubMenu();
+
+            }
+            case "4" -> {
+                deleteMember();
+            }
+            case "b" -> {
+                mainMenu();
+            }
+        }
+    }
+
     // --- 1. USER MANAGEMENT ALMENÜ ---
-    private void userSubMenu() {
+    public void userSubMenu() {
         System.out.println("\n--- USER MANAGEMENT ---");
         System.out.println("1. Add member to your group");
         System.out.println("2. List Members");
@@ -228,7 +289,6 @@ public class OsRunner implements CommandLineRunner {
     @Transactional
     // --- 4. APP MANAGEMENT ALMENÜ ---
     public void appSubMenu() {
-        currentUser = userService.findUserByName(currentUser.getFullName());
         System.out.println("\n--- APP MANAGEMENT ---");
         System.out.println("1. List apps");
         System.out.println("2. Add app");
@@ -292,10 +352,15 @@ public class OsRunner implements CommandLineRunner {
                         done = true;
                         System.out.println("Kiválasztott alkalmazások száma: " + selectedApps.size());
                         for (Application app : selectedApps) {
+                            System.out.println(app.getName());
                             app.setOwner(currentUser); // beállítod az ownert!
                             applicationRepository.save(app);
                         }
                         Set<Application> oldList = currentUser.getInstalledApplications();
+                        for (Application app2 : oldList) {
+                            System.out.println("************");
+                            System.out.println(app2.getName());
+                        }
                         oldList.addAll(selectedApps);
                         currentUser.setInstalledApplications(oldList);
                         userService.modifyUser(currentUser.getFullName(), currentUser);
@@ -309,9 +374,11 @@ public class OsRunner implements CommandLineRunner {
                 for (int i = 0; i < apps.size(); i++) {
                     System.out.println((i + 1) + ". " + apps.get(i));
                 }
-                System.out.println("Melyik alkalmazást szeretnéd módosítani? ");
-                response = sc.nextLine();
-                while (!(Integer.parseInt(response) >= 1 && Integer.parseInt(response) <= apps.size())) {
+                if (apps.isEmpty()) {
+                    System.out.println("Nincsen felvett alkalmazásod.");
+                    appSubMenu();
+                }
+                while (response.isBlank() || !(Integer.parseInt(response) >= 1 && Integer.parseInt(response) <= apps.size())) {
                     System.out.println("Melyik alkalmazást szeretnéd módosítani? ");
                     response = sc.nextLine();
                 }

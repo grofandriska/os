@@ -44,7 +44,7 @@ public abstract class User {
     @JoinColumn(name = "wallpaper_id")
     private Wallpaper activeWallpaper;
 
-    @ManyToOne
+    @ManyToMany
     @JoinColumn(name = "theme_id")
     private Theme theme;
 
