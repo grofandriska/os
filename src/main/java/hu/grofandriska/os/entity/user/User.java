@@ -7,35 +7,39 @@ import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
+import lombok.ToString;
 
-import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
 @Data
 @RequiredArgsConstructor
-@NoArgsConstructor
 @Inheritance(strategy = InheritanceType.JOINED)
+@Table(name = "app_users")
 public abstract class User {
 
     @Id
     private String id;
     private String firstName;
     private String lastName;
+    private String fullName;
 
     @ManyToOne
     @JoinColumn(name = "group_id")
+    @ToString.Exclude
     private UserGroup group;
 
     @Enumerated(EnumType.STRING)
     private Role role;
 
     @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, orphanRemoval = true)
+    @ToString.Exclude
     private List<Application> installedApplications = new ArrayList<>();
 
-    private Timestamp createdAt;
-    private Timestamp updatedAt;
+    private LocalDate createdAt = LocalDate.now();
+    private LocalDate updatedAt;
 
     @ManyToOne
     @JoinColumn(name = "wallpaper_id")

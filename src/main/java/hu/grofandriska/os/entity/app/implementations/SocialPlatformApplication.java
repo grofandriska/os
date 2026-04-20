@@ -8,7 +8,6 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @DiscriminatorValue("SOCIAL")
-@NoArgsConstructor
 public class SocialPlatformApplication extends Application {
 
 

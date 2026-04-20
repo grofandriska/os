@@ -6,13 +6,13 @@ import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.List;
 
 
 @Entity
 @Data
 @RequiredArgsConstructor
-@NoArgsConstructor
 @Inheritance(strategy = InheritanceType.JOINED)
 public abstract class UserGroup {
 
@@ -23,6 +23,6 @@ public abstract class UserGroup {
     @OneToMany(mappedBy = "group", cascade = CascadeType.ALL)
     private List<User> members;
 
-    private Timestamp createdAt;
-    private Timestamp updatedAt;
+    private LocalDate createdAt;
+    private LocalDate updatedAt;
 }

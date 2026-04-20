@@ -8,8 +8,8 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @DiscriminatorValue("GAME")
-@NoArgsConstructor
 public class GameApplication extends Application {
+
 
     @Override
     public void onLaunch() {

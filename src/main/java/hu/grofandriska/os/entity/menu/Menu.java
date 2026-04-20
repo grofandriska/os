@@ -14,7 +14,6 @@ import java.util.List;
 @Entity
 @Data
 @RequiredArgsConstructor
-@NoArgsConstructor
 public class Menu {
 
     @Id

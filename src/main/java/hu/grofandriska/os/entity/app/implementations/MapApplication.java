@@ -8,8 +8,8 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @DiscriminatorValue("MAP")
-@NoArgsConstructor
 public class MapApplication extends Application {
+
     @Override
     public void onLaunch() {
         System.out.println("--- [ " + getName().toUpperCase() + " ] ---");
