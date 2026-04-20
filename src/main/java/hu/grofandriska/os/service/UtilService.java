@@ -44,7 +44,7 @@ public class UtilService {
         return repository.save(admin);
     }
 
-
+    @Transactional
     public UserGroup createGroup(){
         UserGroup userGroup = new Family();
         userGroup.setId("1");

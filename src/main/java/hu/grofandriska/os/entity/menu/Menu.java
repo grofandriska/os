@@ -4,7 +4,6 @@ import hu.grofandriska.os.entity.app.Application;
 import hu.grofandriska.os.entity.user.User;
 import jakarta.persistence.*;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 

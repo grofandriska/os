@@ -1,11 +1,8 @@
 package hu.grofandriska.os.entity.theme;
 
 import hu.grofandriska.os.entity.user.User;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.*;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 
 @Entity
@@ -14,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 public class Wallpaper {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
     private String name;
     private String description;

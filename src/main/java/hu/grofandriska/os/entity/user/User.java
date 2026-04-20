@@ -4,23 +4,22 @@ import hu.grofandriska.os.entity.app.Application;
 import hu.grofandriska.os.entity.theme.Theme;
 import hu.grofandriska.os.entity.theme.Wallpaper;
 import jakarta.persistence.*;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Data
 @RequiredArgsConstructor
 @Inheritance(strategy = InheritanceType.JOINED)
 @Table(name = "app_users")
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public abstract class User {
 
     @Id
+    @EqualsAndHashCode.Include
     private String id;
     private String firstName;
     private String lastName;
@@ -36,7 +35,7 @@ public abstract class User {
 
     @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, orphanRemoval = true)
     @ToString.Exclude
-    private List<Application> installedApplications = new ArrayList<>();
+    private Set<Application> installedApplications = new HashSet<>();
 
     private LocalDate createdAt = LocalDate.now();
     private LocalDate updatedAt;

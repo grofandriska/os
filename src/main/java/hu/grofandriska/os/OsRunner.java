@@ -17,10 +17,7 @@ import org.springframework.stereotype.Component;
 
 import java.sql.SQLOutput;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Scanner;
+import java.util.*;
 
 @Component
 @RequiredArgsConstructor
@@ -97,6 +94,39 @@ public class OsRunner implements CommandLineRunner {
                 case "4" -> appSubMenu();
                 case "q" -> System.exit(0);
                 default -> System.out.println("Érvénytelen opció!");
+            }
+        }
+    }
+
+    // --- 1. USER MANAGEMENT ALMENÜ ---
+    private void userSubMenu() {
+        System.out.println("\n--- USER MANAGEMENT ---");
+        System.out.println("1. Add member to your group");
+        System.out.println("2. List Members");
+        System.out.println("3. Edit User");
+        System.out.println("4. Delete User");
+        System.out.println("b. Vissza");
+
+        String choice = sc.nextLine();
+        switch (choice) {
+            case "1" -> {
+                addMember();
+                userSubMenu();
+            }
+            case "2" -> {
+                listMembers();
+                userSubMenu();
+            }
+            case "3" -> {
+                modifyMember();
+                userSubMenu();
+
+            }
+            case "4" -> {
+                deleteMember();
+            }
+            case "b" -> {
+                mainMenu();
             }
         }
     }
@@ -178,8 +208,6 @@ public class OsRunner implements CommandLineRunner {
         user.setUpdatedAt(LocalDate.now());
 
         userService.modifyUser(currentUser.getFullName(), user);
-
-
     }
 
     public void deleteMember() {
@@ -197,41 +225,10 @@ public class OsRunner implements CommandLineRunner {
 
     }
 
-    // --- 1. USER MANAGEMENT ALMENÜ ---
-    private void userSubMenu() {
-        System.out.println("\n--- USER MANAGEMENT ---");
-        System.out.println("1. Add member to your group");
-        System.out.println("2. List Members");
-        System.out.println("3. Edit User");
-        System.out.println("4. Delete User");
-        System.out.println("b. Vissza");
-
-        String choice = sc.nextLine();
-        switch (choice) {
-            case "1" -> {
-                addMember();
-                userSubMenu();
-            }
-            case "2" -> {
-                listMembers();
-                userSubMenu();
-            }
-            case "3" -> {
-                modifyMember();
-                userSubMenu();
-
-            }
-            case "4" -> {
-                deleteMember();
-            }
-            case "b" -> {
-                mainMenu();
-            }
-        }
-    }
-
+    @Transactional
     // --- 4. APP MANAGEMENT ALMENÜ ---
-    private void appSubMenu() {
+    public void appSubMenu() {
+        currentUser = userService.findUserByName(currentUser.getFullName());
         System.out.println("\n--- APP MANAGEMENT ---");
         System.out.println("1. List apps");
         System.out.println("2. Add app");
@@ -243,13 +240,14 @@ public class OsRunner implements CommandLineRunner {
 
         switch (choice) {
             case "1" -> {
-                List<Application> apps = applicationRepository.findByOwner(currentUser);
+                List<Application> apps = new ArrayList<>(applicationRepository.findByOwner(currentUser));
                 for (int i = 0; i < apps.size(); i++) {
-                    System.out.println(i + 1 + ". " + apps.get(i).toString());
+                    System.out.println((i + 1) + ". " + apps.get(i));
                 }
             }
 
             case "2" -> {
+
                 System.out.println("Alkalmazás hozzáadása az OS-hez\n");
                 List<Application> apps = applicationRepository.findAll();
 
@@ -260,6 +258,7 @@ public class OsRunner implements CommandLineRunner {
                 boolean done = false;
 
                 List<Application> selectedApps = new ArrayList<>();
+
                 while (!done) {
                     System.out.println("Adja meg az alkalmazás sorszámokat (pl: 1 vagy 1,2,3):");
                     response = sc.nextLine().trim();
@@ -268,9 +267,6 @@ public class OsRunner implements CommandLineRunner {
                         System.out.println("Hiba: Nem adtál meg semmit!");
                         continue;
                     }
-
-                    // Regex ellenőrzés: Csak számok és vesszők lehetnek benne
-                    // ^[0-9]+(,[0-9]+)*$  -> jelentése: szám, amit követhet (vessző + szám) tetszőlegesen
                     if (!response.matches("^[0-9]+(,[0-9]+)*$")) {
                         System.out.println("Hiba: Csak számokat és vesszőket használj (pl: 1,3,4)!");
                         continue;
@@ -295,18 +291,78 @@ public class OsRunner implements CommandLineRunner {
                     if (allValid) {
                         done = true;
                         System.out.println("Kiválasztott alkalmazások száma: " + selectedApps.size());
+                        for (Application app : selectedApps) {
+                            app.setOwner(currentUser); // beállítod az ownert!
+                            applicationRepository.save(app);
+                        }
+                        Set<Application> oldList = currentUser.getInstalledApplications();
+                        oldList.addAll(selectedApps);
+                        currentUser.setInstalledApplications(oldList);
+                        userService.modifyUser(currentUser.getFullName(), currentUser);
                     }
                 }
             }
 
-
             case "3" -> {
-                modifyMember();
-                userSubMenu();
+                String response = "";
+                List<Application> apps = new ArrayList<>(applicationRepository.findByOwner(currentUser));
+                for (int i = 0; i < apps.size(); i++) {
+                    System.out.println((i + 1) + ". " + apps.get(i));
+                }
+                System.out.println("Melyik alkalmazást szeretnéd módosítani? ");
+                response = sc.nextLine();
+                while (!(Integer.parseInt(response) >= 1 && Integer.parseInt(response) <= apps.size())) {
+                    System.out.println("Melyik alkalmazást szeretnéd módosítani? ");
+                    response = sc.nextLine();
+                }
+                Application app = apps.get(Integer.parseInt(response) - 1);
+                response = " ";
+                while (response.isBlank()) {
+                    System.out.println("Mi legyen a(z)" + app.getName() + " alkalmazás új neve? ");
+                    response = sc.nextLine();
+                }
+                app.setName(response);
+                applicationRepository.save(app);
 
             }
             case "4" -> {
-                deleteMember();
+                String response = "";
+                List<Application> apps = new ArrayList<>(applicationRepository.findByOwner(currentUser));
+                for (int i = 0; i < apps.size(); i++) {
+                    System.out.println((i + 1) + ". " + apps.get(i));
+                }
+                System.out.println("Melyik alkalmazást szeretnéd törölni? ");
+                response = sc.nextLine();
+
+                while (!(Integer.parseInt(response) >= 1 && Integer.parseInt(response) <= apps.size())) {
+                    System.out.println("Melyik alkalmazást szeretnéd törölni? ");
+                    response = sc.nextLine();
+                }
+
+                String deleteResponse = "";
+
+                while (!(deleteResponse.equals("I") || deleteResponse.equals("N"))) {
+                    System.out.println("Biztosan szeretnéd törölni? (I/N) ");
+                    deleteResponse = sc.nextLine();
+
+                    if (deleteResponse.equals("I")) {
+                        apps.remove(apps.get(Integer.parseInt(response) - 1));
+                        for (Application app : apps) {
+                            app.setOwner(currentUser);
+                        }
+                        Set<Application> currentApps = currentUser.getInstalledApplications();
+
+                        // 2. Közvetlenül ehhez adjuk hozzá az újakat (nem set-teljük újra az egészet)
+                        currentApps.addAll(apps);
+
+                        // 3. Mentjük a felhasználót
+                        userService.modifyUser(currentUser.getFullName(), currentUser);
+                        appSubMenu();
+                    } else if (deleteResponse.equals("N")) {
+                        appSubMenu();
+                    }
+
+                }
             }
             case "b" -> {
                 mainMenu();

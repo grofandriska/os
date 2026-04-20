@@ -5,7 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 
-import java.sql.Timestamp;
+
 import java.time.LocalDate;
 import java.util.List;
 
