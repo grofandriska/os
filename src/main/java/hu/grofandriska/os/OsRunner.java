@@ -4,12 +4,14 @@ import hu.grofandriska.os.entity.app.Application;
 import hu.grofandriska.os.entity.app.implementations.GameApplication;
 import hu.grofandriska.os.entity.app.implementations.MapApplication;
 import hu.grofandriska.os.entity.theme.Theme;
+import hu.grofandriska.os.entity.theme.Wallpaper;
 import hu.grofandriska.os.entity.user.Role;
 import hu.grofandriska.os.entity.user.User;
 import hu.grofandriska.os.entity.user.UserGroup;
 import hu.grofandriska.os.entity.user.company.CompanyMember;
 import hu.grofandriska.os.entity.user.family.FamilyMember;
 import hu.grofandriska.os.repository.ApplicationRepository;
+import hu.grofandriska.os.repository.WallpaperRepository;
 import hu.grofandriska.os.service.*;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -91,7 +93,7 @@ public class OsRunner implements CommandLineRunner {
             switch (choice) {
                 case "1" -> userSubMenu();
                 case "2" -> themeSubMenu();
-                case "3" -> System.out.println("TBD");
+                case "3" -> wallpaperSubMenu();
                 case "4" -> appSubMenu();
                 case "q" -> System.exit(0);
                 default -> System.out.println("Érvénytelen opció!");
@@ -102,10 +104,7 @@ public class OsRunner implements CommandLineRunner {
     public void themeSubMenu() {
         System.out.println("\n--- USER MANAGEMENT ---");
         System.out.println("1. Add theme");
-        System.out.println("2. Edit theme");
-        System.out.println("3. Delete theme");
-        System.out.println("4. List themes");
-        System.out.println("5. Set my theme");
+        System.out.println("2. Set theme");
         System.out.println("b. Vissza");
 
         String choice = sc.nextLine();
@@ -140,18 +139,17 @@ public class OsRunner implements CommandLineRunner {
                 }
                 String response = "";
                 while (response.isBlank() || Integer.parseInt(response) < 1) {
-                    System.out.println("Melyik appot akarod módosítani?");
+                    System.out.println("Melyik Témáát akarod beállítani?");
                     response = sc.nextLine();
                 }
+                User user = currentUser;
+                Theme theme = themeList.get(Integer.parseInt(response) - 1);
+                user.setTheme(theme);
+                theme.setOwner(user);
+                themeService.saveTheme(theme);
+                userService.modifyUser(currentUser.getFullName(), user);
 
-            }
-            case "3" -> {
-                modifyMember();
-                userSubMenu();
 
-            }
-            case "4" -> {
-                deleteMember();
             }
             case "b" -> {
                 mainMenu();
@@ -159,7 +157,58 @@ public class OsRunner implements CommandLineRunner {
         }
     }
 
-    // --- 1. USER MANAGEMENT ALMENÜ ---
+    public void wallpaperSubMenu() {
+        System.out.println("\n--- WALLPAPER MANAGEMENT ---");
+        System.out.println("1. Add Wallpaper");
+        System.out.println("2. Set Wallpaper");
+        System.out.println("b. Vissza");
+
+        String choice = sc.nextLine();
+        switch (choice) {
+            case "1" -> {
+                Wallpaper wallpaper = new Wallpaper();
+                String name = "";
+                while (name.isBlank()) {
+                    System.out.println("Mi a háttérkép neve?");
+                    name = sc.nextLine();
+                }
+                wallpaper.setName(name);
+                name = "";
+                while (name.isBlank()) {
+                    System.out.println("Mi a háttérkép leírása?");
+                    name = sc.nextLine();
+                }
+                wallpaper.setDescription(name);
+                wallpaper.setOwner(currentUser);
+                wallpaper.setId(UUID.randomUUID().toString());
+                wallpaperService.addWallpaper(wallpaper);
+                wallpaperSubMenu();
+            }
+            case "2" -> {
+                List<Wallpaper> list = wallpaperService.findAll();
+                if (list.isEmpty()) {
+                    System.out.println("Nincsenek felvett hátterek");
+                    wallpaperSubMenu();
+                }
+                for (Wallpaper wp : list) {
+                    System.out.println(list.indexOf(wp) + ". " + wp.getName());
+                }
+                String response = "";
+                while (response.isBlank() || Integer.parseInt(response) < 1) {
+                    System.out.println("Melyik Hátteret akarod beállítani?");
+                    response = sc.nextLine();
+                }
+                User user = currentUser;
+                user.setActiveWallpaper(list.get(Integer.parseInt(response)));
+                userService.modifyUser(currentUser.getFullName(), user);
+                wallpaperSubMenu();
+            }
+            case "b" -> {
+                mainMenu();
+            }
+        }
+    }
+
     public void userSubMenu() {
         System.out.println("\n--- USER MANAGEMENT ---");
         System.out.println("1. Add member to your group");
@@ -287,7 +336,6 @@ public class OsRunner implements CommandLineRunner {
     }
 
     @Transactional
-    // --- 4. APP MANAGEMENT ALMENÜ ---
     public void appSubMenu() {
         System.out.println("\n--- APP MANAGEMENT ---");
         System.out.println("1. List apps");
@@ -420,10 +468,10 @@ public class OsRunner implements CommandLineRunner {
                         Set<Application> currentApps = currentUser.getInstalledApplications();
 
                         // 2. Közvetlenül ehhez adjuk hozzá az újakat (nem set-teljük újra az egészet)
-                        currentApps.addAll(apps);
+                        currentUser.setInstalledApplications(new HashSet<>(apps));
+                        userService.modifyUser(currentUser.getFullName(), currentUser);
 
                         // 3. Mentjük a felhasználót
-                        userService.modifyUser(currentUser.getFullName(), currentUser);
                         appSubMenu();
                     } else if (deleteResponse.equals("N")) {
                         appSubMenu();
@@ -435,7 +483,5 @@ public class OsRunner implements CommandLineRunner {
                 mainMenu();
             }
         }
-
-        // A Theme és Wallpaper menüket ugyanígy kell felépítened
     }
 }

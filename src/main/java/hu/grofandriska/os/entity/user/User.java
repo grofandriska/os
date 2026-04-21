@@ -40,7 +40,7 @@ public abstract class User {
     private LocalDate createdAt = LocalDate.now();
     private LocalDate updatedAt;
 
-    @ManyToOne
+    @ManyToMany
     @JoinColumn(name = "wallpaper_id")
     private Wallpaper activeWallpaper;
 
